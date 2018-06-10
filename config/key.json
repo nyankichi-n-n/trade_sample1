@@ -1,0 +1,5 @@
+{
+    "zaif_key": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "zaif_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "slack_webhook_url": "https://取得したURL"
+}
