@@ -25,7 +25,7 @@ slack = slackweb.Slack(WEBHOOK_URL)
 
 API_KEY = API_data["zaif_key"]
 API_SECRET = API_data["zaif_secret"]
-COIN_NAME = 'btc'
+COIN_NAME = 'BTC'
 COIN_PAIR = 'BTC/JPY'
 EXCHANGE = 'Zaif:'
 
@@ -230,8 +230,8 @@ if __name__ == '__main__':
             last_trade_price = int(exchange.fetch_ticker(COIN_PAIR)['last'])
             # result = exchange.fetch_balance()
             # start_funds_jpy = result['total']['JPY']
-            # if result['total']['BTC'] != 0:
-            #     start_funds_jpy += result['total']['BCT'] * last_trade_price
+            # if result['total'][COIN_NAME] != 0:
+            #     start_funds_jpy += result['total'][COIN_NAME] * last_trade_price
             # print('start jpy:', start_funds_jpy)
 
             #####################################
