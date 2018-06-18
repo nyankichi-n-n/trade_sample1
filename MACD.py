@@ -75,24 +75,24 @@ class MovingAverageConvergenceDivergence:
             self.__SMA12[0] = price
             self.__SMA26[0] = price
 
-            SUM12 = 0.0000
-            SUM26 = 0.0000
+            sum12 = 0.0000
+            sum26 = 0.0000
 
             for var in range(0, self.__LOOP_CNT12):
-                SUM12 += self.__SMA12[var]
+                sum12 += self.__SMA12[var]
 
             for var in range(0, self.__LOOP_CNT26):
-                SUM26 += self.__SMA26[var]
+                sum26 += self.__SMA26[var]
 
-            self.__SMA12_AVE = SUM12 / self.__LOOP_CNT12
-            self.__SMA26_AVE = SUM26 / self.__LOOP_CNT26
+            self.__SMA12_AVE = sum12 / self.__LOOP_CNT12
+            self.__SMA26_AVE = sum26 / self.__LOOP_CNT26
 
             return False, 0, 0, 0, 0
         else:
             self.__MACD_pre = self.__MACD
             self.__MACD9_AVE_pre = self.__MACD9_AVE
             
-            ########################EMAの算出#########################
+            # #######################EMAの算出#########################
             for var in range(self.__LOOP_CNT12 - 1, 0, -1):
                 self.__EMA12[var] = self.__EMA12[var - 1]
 
@@ -108,9 +108,9 @@ class MovingAverageConvergenceDivergence:
 
             self.__EMA12[0] = self.__SMA12_AVE
             self.__EMA26[0] = self.__SMA26_AVE
-            ########################EMAの算出#########################
+            # #######################EMAの算出#########################
 
-            ########################MACDの算出########################
+            # #######################MACDの算出########################
             self.__MACD = self.__SMA12_AVE - self.__SMA26_AVE  # MACD ＝ 基準線(EMA) － 相対線(EMA)
 
             for var in range(self.__LOOP_CNT9 - 1, 0, -1):
@@ -118,18 +118,17 @@ class MovingAverageConvergenceDivergence:
 
             self.__MACD9[0] = self.__MACD
 
-            SUM9 = 0.0000
+            sum9 = 0.0000
             for var in range(0, self.__LOOP_CNT9):
-                SUM9 += self.__MACD9[var]
+                sum9 += self.__MACD9[var]
 
-            self.__MACD9_AVE = SUM9 / self.__LOOP_CNT9
+            self.__MACD9_AVE = sum9 / self.__LOOP_CNT9
 
             # print('__MACD:', self.__MACD)
             # print('__MACD9:', self.__MACD9_AVE)
 
-            ########################MACDの算出########################
+            # #######################MACDの算出########################
             if self.__count == self.__LOOP_CNT26 + 1:
                 return False, 0, 0, 0, 0
             else:
                 return True, self.__MACD, self.__MACD9_AVE, self.__MACD_pre, self.__MACD9_AVE_pre
-                

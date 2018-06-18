@@ -108,26 +108,22 @@ user_jpy_asset = 5000.0  # 実売買しないのでテスト用日本円資産
 #####################################
 
 
-def order_limit_call(side, amount, price):
+def order_limit_call(side, coin_amount, price):
     """
     仮想通貨指値注文
     繰り返しは5回までとしている。
     :param side: 'buy','sell'
-    :param amount: コイン数
+    :param coin_amount: コイン数
     :param price: 価格
     :return: APIが正常応答したかのフラグ、オーダーID
     """
     global exchange, COIN_PAIR, error_log
-    count = 0
-    while True:
-        count += 1
-        if count > 5:  # 繰り返しは5回までとする。
-            return False, 0
+    for _a in range(5):
         try:
             if side == 'buy':
-                ccxt_result = exchange.create_limit_buy_order(COIN_PAIR, amount, price)
+                ccxt_result = exchange.create_limit_buy_order(COIN_PAIR, coin_amount, price)
             elif side == 'sell':
-                ccxt_result = exchange.create_limit_sell_order(COIN_PAIR, amount, price)
+                ccxt_result = exchange.create_limit_sell_order(COIN_PAIR, coin_amount, price)
             else:
                 return False, 0
         except:
@@ -142,7 +138,7 @@ def order_limit_call(side, amount, price):
         check_flag, check_id, check_status = order_check()
         if check_flag and check_id != 0:
             return True, check_id
-        while True:
+        for _b in range(5):
             try:
                 ccxt_result = exchange.fetch_balance()
             except:
@@ -156,6 +152,13 @@ def order_limit_call(side, amount, price):
                 else:
                     if ccxt_result['BTC']['total'] == 0:
                         return True, 0
+        else:
+            print('order_limit_call balance リトライ5回失敗')
+            return False, 0
+
+    else:
+        print('order_limit_call リトライ5回失敗')
+        return False, 0
 
 
 def order_check():
@@ -164,11 +167,7 @@ def order_check():
     :return: APIが正常応答したかのフラグ、オーダーID、オーダーステータス
     """
     global exchange, COIN_PAIR, error_log
-    count = 0
-    while True:
-        count += 1
-        if count > 10:  # 繰り返しは10回までとする
-            return False, 0, 0
+    for _c in range(10):
         try:
             ccxt_result = exchange.fetch_open_orders(COIN_PAIR)
         except:
@@ -180,6 +179,9 @@ def order_check():
                 return True, 0, 0
             else:
                 return True, ccxt_result[0]['id'], ccxt_result[0]['status']
+    else:
+        print('order_check リトライ10回失敗')
+        return False, 0, 0
 
 
 def slack_notify(message):
@@ -188,19 +190,17 @@ def slack_notify(message):
     :param message: 通知メッセージ
     """
     global slack_flag, slack, error_log
-    count = 0
-    while slack_flag:
-        count += 1
-        if count > 5:
-            print('slack call error')
-            break
-        try:
-            slack.notify(text=message)
-        except:
-            error_log.write()
-            print("エラー:slack call error")
+    if slack_flag:
+        for _d in range(5):
+            try:
+                slack.notify(text=message)
+            except:
+                error_log.write()
+                print("エラー:slack call error")
+            else:
+                break
         else:
-            break
+            print('slack call error')
 
 
 if __name__ == '__main__':
@@ -308,7 +308,8 @@ if __name__ == '__main__':
 
         else:
             loop_count += 1
-            sma_flag, sma_avg1, sma_avg2, sma_sigma, sma_avg1_pre, sma_avg2_pre, sma_sigma_pre = sma_bb.add(current_price)
+            sma_flag, sma_avg1, sma_avg2, sma_sigma, sma_avg1_pre, sma_avg2_pre, sma_sigma_pre \
+                = sma_bb.add(current_price)
             macd_flag, macd_macd, macd_signal, macd_macd_pre, macd_signal_pre = macd.add(current_price)
 
         if sma_flag:
@@ -338,25 +339,25 @@ if __name__ == '__main__':
 
         if asset_info or loop_count == 1:
             if funds_coin < 0.0001 and last_trade_order_id == 0:
-                message_text = EXCHANGE + '現在の資産: ' + str(date_time) + '\njpy資産:' \
-                               + str(funds_jpy) + '\n' + COIN_NAME + '資産:' + str(funds_coin) \
-                               + '\nProfit:' + str(profit_count) + ' Loss:' + str(loss_count) \
-                               + '\nGain:' + str(funds_jpy - start_funds_jpy)
+                message_text = EXCHANGE + '現在の資産: ' + str(date_time) + '\njpy資産:'
+                message_text += str(funds_jpy) + '\n' + COIN_NAME + '資産:' + str(funds_coin)
+                message_text += '\nProfit:' + str(profit_count) + ' Loss:' + str(loss_count)
+                message_text += '\nGain:' + str(funds_jpy - start_funds_jpy)
             else:
-                message_text = EXCHANGE + '現在の資産: ' + str(date_time) + '\njpy資産:' \
-                               + str(funds_jpy) + '\n' + COIN_NAME + '資産:' + str(funds_coin) \
-                               + '\nProfit:' + str(profit_count) + ' Loss:' + str(loss_count)
+                message_text = EXCHANGE + '現在の資産: ' + str(date_time) + '\njpy資産:'
+                message_text += str(funds_jpy) + '\n' + COIN_NAME + '資産:' + str(funds_coin)
+                message_text += '\nProfit:' + str(profit_count) + ' Loss:' + str(loss_count)
             slack_notify(message_text)
             asset_info = False
 
         # コインを持っていて、デットクロス売り
-        if (funds_coin >= 0.0001 and trade_hold_count > TRADE_HOLD_MAX
-              and macd_macd < macd_signal and macd_macd_pre > macd_signal_pre and dead_cross_flag == False):
+        if funds_coin >= 0.0001 and trade_hold_count > TRADE_HOLD_MAX and macd_macd < macd_signal \
+                and macd_macd_pre > macd_signal_pre and not dead_cross_flag:
 
             if last_trade_price > current_price:
                 dead_cross_flag = True
-                print('■ デットクロスで処理移行')
                 message_text = EXCHANGE + '■ デットクロス処理移行: ' + str(date_time)
+                print(message_text)
                 slack_notify(message_text)
                 message_func += '、デットクロス処理移行'
             else:
@@ -393,16 +394,13 @@ if __name__ == '__main__':
                         loss_count += 1
                         last_trade_type = 3
 
-                    print('■ デットクロス売却申請を行いました。')
-                    print("売却注文価格:" + str(current_price - 5))
-                    print("売却注文量　:" + str(amount))
                     message_func += '、デットクロス'
                     message_trade = 'ask'
                     message_price = current_price - 5
                     message_size = amount
-                    message_text = EXCHANGE + '■ デットクロス売却申請: ' + str(date_time) \
-                                   + '\nPrice:' + str(current_price - 5) + '\nSize:' \
-                                   + str(amount)
+                    message_text = EXCHANGE + '■ デットクロス売却申請: ' + str(date_time)
+                    message_text += '\nPrice:' + str(current_price - 5) + '\nSize:' + str(amount)
+                    print(message_text)
                     slack_notify(message_text)
 
         # コインを持っていて
@@ -449,17 +447,15 @@ if __name__ == '__main__':
                     asset_info = True
                     profit_count += 1
 
-                    print('■ 利確1売却申請を行いました。')
-                    print("売却注文価格:" + str(current_price - 5 + adjustment))
-                    print("売却注文量　:" + str(amount))
                     message_func += '、利確1'
                     message_trade = 'ask'
                     message_price = current_price - 5 + adjustment
                     message_size = amount
 
-                    message_text = EXCHANGE + '■ 利確1売却申請: ' + str(date_time) \
-                                   + '\nPrice:' + str(current_price - 5 + adjustment) \
-                                   + '\nSize:' + str(amount)
+                    message_text = EXCHANGE + '■ 利確1売却申請: ' + str(date_time)
+                    message_text += '\nPrice:' + str(current_price - 5 + adjustment)
+                    message_text += '\nSize:' + str(amount)
+                    print(message_text)
                     slack_notify(message_text)
 
         # コインを持っていて平均より2%低い場合に損切り
@@ -492,17 +488,14 @@ if __name__ == '__main__':
                 asset_info = True
                 loss_count += 1
 
-                print('■ 損切売却申請を行いました。')
-                print("売却注文価格:" + str(current_price - 5))
-                print("売却注文量　:" + str(amount))
                 message_func += '、損切'
                 message_trade = 'ask'
                 message_price = current_price - 5
                 message_size = amount
 
-                message_text = EXCHANGE + '■ 損切売却申請: ' + str(date_time) \
-                               + '\nPrice:' + str(current_price - 5) + '\nSize:' \
-                               + str(amount)
+                message_text = EXCHANGE + '■ 損切売却申請: ' + str(date_time)
+                message_text += '\nPrice:' + str(current_price - 5) + '\nSize:' + str(amount)
+                print(message_text)
                 slack_notify(message_text)
 
         # コインを最小単位持っていない場合で
@@ -536,16 +529,14 @@ if __name__ == '__main__':
                 dead_cross_flag = False
                 asset_info = True
 
-                print('■ 購入申請を行いました')
-                print("購入注文価格:" + str(current_price))
-                print("購入注文量　:" + str(amount))
                 message_func += '、購入'
                 message_trade = 'bid'
                 message_price = current_price
                 message_size = amount
 
-                message_text = EXCHANGE + '■ 購入申請: ' + str(date_time) \
-                               + '\nPrice:' + str(current_price) + '\nSize:' + str(amount)
+                message_text = EXCHANGE + '■ 購入申請: ' + str(date_time)
+                message_text += '\nPrice:' + str(current_price) + '\nSize:' + str(amount)
+                print(message_text)
                 slack_notify(message_text)
 
         if cancel_flag and cancel_loop_count > CANCEL_LOOP_MAX:
@@ -571,7 +562,7 @@ if __name__ == '__main__':
                         last_trade_price = last_trade_price_pre
                         message_func += '、キャンセル'
                         message_text = EXCHANGE + '■ キャンセルしました'
-                        slack.notify(text=message_text)
+                        slack_notify(message_text)
                         asset_info = True
                         if last_trade_type == 1 or last_trade_type == 2:
                             profit_count -= 1
@@ -607,11 +598,12 @@ if __name__ == '__main__':
             trade_hold_count += 1
 
         if funds_coin < 0.0001 and END_FLAG and last_trade_order_id == 0:
-            message_text = EXCHANGE + 'プログラム終了\n' + str(date_time) + '\njpy資産:' \
-                           + str(funds_jpy) + '\n' + COIN_NAME + '資産:' + str(funds_coin) \
-                           + '\nProfit:' + str(profit_count) + ' Loss:' + str(loss_count) \
-                           + '\nGain:' + str(funds_jpy - start_funds_jpy)
-            slack.notify(text=message_text)
+            message_text = EXCHANGE + 'プログラム終了\n' + str(date_time) + '\njpy資産:'
+            message_text += str(funds_jpy) + '\n' + COIN_NAME + '資産:' + str(funds_coin)
+            message_text += '\nProfit:' + str(profit_count) + ' Loss:' + str(loss_count)
+            message_text += '\nGain:' + str(funds_jpy - start_funds_jpy)
+            print(message_text)
+            slack_notify(message_text)
             exit()
 
         if date_time > end_datetime:

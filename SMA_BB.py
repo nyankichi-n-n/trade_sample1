@@ -67,5 +67,3 @@ class SimpleMovingAverageBollingerBand:
             self.__avg2 = np.average(self.__MAL2)
             self.__sigma = np.std(self.__MAL2, ddof=1)
             return True, self.__avg1, self.__avg2, self.__sigma, self.__avg1_pre, self.__avg2_pre, self.__sigma_pre
-
-
