@@ -8,6 +8,7 @@ import datetime
 import ccxt
 import SMA_BB
 import MACD
+import urllib3
 from decimal import (Decimal)
 from logger import error_logger
 from logger import trade_logger
@@ -126,9 +127,17 @@ def order_limit_call(side, coin_amount, price):
                 ccxt_result = exchange.create_limit_sell_order(COIN_PAIR, coin_amount, price)
             else:
                 return False, 0
-        except:
+        except ccxt.RequestTimeout:
             error_log.write()
-            print('エラー: call ', side, ' order')
+            print('エラー: call ', side, ' order timeout')
+            time.sleep(1)
+        except ccxt.ExchangeNotAvailable:
+            error_log.write()
+            print('エラー: call ', side, ' order NotAvailable')
+            time.sleep(1)
+        except ccxt.ExchangeError:
+            error_log.write()
+            print('エラー: call ', side, ' order ExchangeError')
             time.sleep(1)
         else:
             return True, ccxt_result['id']
@@ -141,9 +150,17 @@ def order_limit_call(side, coin_amount, price):
         for _b in range(5):
             try:
                 ccxt_result = exchange.fetch_balance()
-            except:
+            except ccxt.RequestTimeout:
                 error_log.write()
-                print('エラー:balance')
+                print('エラー:balance Timeout')
+                time.sleep(1)
+            except ccxt.ExchangeNotAvailable:
+                error_log.write()
+                print('エラー:balance NotAvailable')
+                time.sleep(1)
+            except ccxt.ExchangeError:
+                error_log.write()
+                print('エラー:balance ExchangeError')
                 time.sleep(1)
             else:
                 if side == 'buy':
@@ -170,9 +187,17 @@ def order_check():
     for _c in range(10):
         try:
             ccxt_result = exchange.fetch_open_orders(COIN_PAIR)
-        except:
+        except ccxt.RequestTimeout:
             error_log.write()
-            print('エラー:cant open orders')
+            print('エラー:cant open orders Timeout')
+            time.sleep(1)
+        except ccxt.ExchangeNotAvailable:
+            error_log.write()
+            print('エラー:cant open orders NotAvailable')
+            time.sleep(1)
+        except ccxt.ExchangeError:
+            error_log.write()
+            print('エラー:cant open orders ExchangeError')
             time.sleep(1)
         else:
             if len(ccxt_result) == 0:
@@ -194,9 +219,9 @@ def slack_notify(message):
         for _d in range(5):
             try:
                 slack.notify(text=message)
-            except:
+            except urllib3.exceptions.HTTPError:
                 error_log.write()
-                print("エラー:slack call error")
+                print("エラー:slack call HTTPError")
             else:
                 break
         else:
@@ -240,7 +265,7 @@ if __name__ == '__main__':
             #                                   #
             #####################################
 
-        except:
+        except (ccxt.RequestTimeout, ccxt.ExchangeNotAvailable, ccxt.ExchangeError):
             error_log.write()
             continue
         else:
@@ -300,9 +325,21 @@ if __name__ == '__main__':
             for currency in result['asks']:
                 ask_depth_amount += Decimal(float(currency[1])).quantize(Decimal('0.0001'))
 
-        except:
+        except ccxt.RequestTimeout:
             error_log.write()
-            print("エラー:Cant get data")
+            print("エラー:Cant get data Timeout")
+            time.sleep(1)
+            continue
+
+        except ccxt.ExchangeNotAvailable:
+            error_log.write()
+            print("エラー:Cant get data NotAvailable")
+            time.sleep(1)
+            continue
+
+        except ccxt.ExchangeError:
+            error_log.write()
+            print("エラー:Cant get data Error")
             time.sleep(1)
             continue
 
@@ -554,7 +591,7 @@ if __name__ == '__main__':
                     try:
                         print("■ キャンセルしました")
                         print(exchange.cancel_order(order_id, COIN_PAIR))
-                    except:
+                    except (ccxt.RequestTimeout, ccxt.ExchangeNotAvailable, ccxt.ExchangeError):
                         error_log.write()
                         print("エラー:cant trade[info/cancel]")
                     else:
