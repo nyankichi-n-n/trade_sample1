@@ -8,7 +8,7 @@ import datetime
 import ccxt
 import SMA_BB
 import MACD
-import urllib3
+import urllib.error
 from decimal import (Decimal)
 from logger import error_logger
 from logger import trade_logger
@@ -219,9 +219,12 @@ def slack_notify(message):
         for _d in range(5):
             try:
                 slack.notify(text=message)
-            except urllib3.exceptions.HTTPError:
+            except urllib.error.HTTPError:
                 error_log.write()
                 print("エラー:slack call HTTPError")
+            except urllib.error.URLError:
+                error_log.write()
+                print("エラー:slack call URLError")
             else:
                 break
         else:
