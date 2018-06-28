@@ -119,12 +119,13 @@ def order_limit_call(side, coin_amount, price):
     :return: APIが正常応答したかのフラグ、オーダーID
     """
     global exchange, COIN_PAIR, error_log
+    coin_float_amount = float(coin_amount)
     for _a in range(5):
         try:
             if side == 'buy':
-                ccxt_result = exchange.create_limit_buy_order(COIN_PAIR, coin_amount, price)
+                ccxt_result = exchange.create_limit_buy_order(COIN_PAIR, coin_float_amount, price)
             elif side == 'sell':
-                ccxt_result = exchange.create_limit_sell_order(COIN_PAIR, coin_amount, price)
+                ccxt_result = exchange.create_limit_sell_order(COIN_PAIR, coin_float_amount, price)
             else:
                 return False, 0
         except ccxt.RequestTimeout:
