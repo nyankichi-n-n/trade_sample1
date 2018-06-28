@@ -609,6 +609,7 @@ if __name__ == '__main__':
                         elif last_trade_type == 3:
                             loss_count -= 1
                         last_trade_type = 0
+                        last_trade_order_id = 0
                         cancel_flag = False
 
         if sma_flag:
