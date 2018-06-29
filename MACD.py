@@ -9,26 +9,6 @@ class MovingAverageConvergenceDivergence:
     """
     MACD(Moving Average Convergence Divergence)のクラスです。
     """
-    __count = 0
-    __LOOP_CNT9 = 36  # MACD9のための定数(15秒間隔なので36)
-    __LOOP_CNT12 = 48  # EMA12のための定数(15秒間隔なので48)
-    __LOOP_CNT26 = 104  # EMA26のための定数(15秒間隔なので104)
-    __MACD9 = []
-    __SMA12 = []
-    __SMA26 = []
-    __EMA12 = []
-    __EMA26 = []
-    # ※α（平滑定数）＝2 /（ｎ+1）
-    # A12AAA = 2 / (12.0000 + 1.0000)
-    # A26AAA = 2 / (26.0000 + 1.0000)
-    __A12AAA = 2 / (48.0000 + 1.0000)
-    __A26AAA = 2 / (104.0000 + 1.0000)
-    __SMA12_AVE = 0.0000
-    __SMA26_AVE = 0.0000
-    __MACD9_AVE = 0.0000
-    __MACD = 0.0
-    __MACD9_AVE_pre = 0.0000
-    __MACD_pre = 0.0
 
     def __init__(self, cnt9=36, cnt12=48, cnt26=104):
         """
@@ -57,6 +37,12 @@ class MovingAverageConvergenceDivergence:
 
         for var in range(0, self.__LOOP_CNT9):
             self.__MACD9.append(self.__SMA12_AVE)
+        self.__SMA12_AVE = 0.0000
+        self.__SMA26_AVE = 0.0000
+        self.__MACD9_AVE = 0.0000
+        self.__MACD = 0.0
+        self.__MACD9_AVE_pre = 0.0000
+        self.__MACD_pre = 0.0
 
     def add(self, price):
         """

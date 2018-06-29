@@ -12,15 +12,6 @@ class SimpleMovingAverageBollingerBand:
     """
     単純移動平均(SMA)、ボリンジャーバンド(BB)のクラスです。
     """
-    __MAL1 = []
-    __MAL2 = []
-    __count = 0
-    __avg1 = 0
-    __avg2 = 0
-    __sigma = 0
-    __avg1_pre = 0
-    __avg2_pre = 0
-    __sigma_pre = 0
     
     def __init__(self, period1=12, period2=104):
         """
@@ -35,6 +26,12 @@ class SimpleMovingAverageBollingerBand:
             self.__MAL1.append(0.00000)
         for var in range(0, self.__period2):
             self.__MAL2.append(0.00000)
+        self.__avg1 = 0
+        self.__avg2 = 0
+        self.__sigma = 0
+        self.__avg1_pre = 0
+        self.__avg2_pre = 0
+        self.__sigma_pre = 0
 
     def add(self, price):
         """
