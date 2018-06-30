@@ -22,16 +22,18 @@ class SimpleMovingAverageBollingerBand:
         self.__count = 0
         self.__period1 = period1
         self.__period2 = period2
-        for var in range(0, self.__period1):
-            self.__MAL1.append(0.00000)
-        for var in range(0, self.__period2):
-            self.__MAL2.append(0.00000)
         self.__avg1 = 0
         self.__avg2 = 0
         self.__sigma = 0
         self.__avg1_pre = 0
         self.__avg2_pre = 0
         self.__sigma_pre = 0
+        self.__MAL1 = []
+        self.__MAL2 = []
+        for var in range(0, self.__period1):
+            self.__MAL1.append(0.00000)
+        for var in range(0, self.__period2):
+            self.__MAL2.append(0.00000)
 
     def add(self, price):
         """

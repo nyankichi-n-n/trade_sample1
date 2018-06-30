@@ -23,6 +23,17 @@ class MovingAverageConvergenceDivergence:
         self.__LOOP_CNT26 = cnt26
         self.__A12AAA = 2 / (cnt12 + 1.0000)
         self.__A26AAA = 2 / (cnt26 + 1.0000)
+        self.__SMA12_AVE = 0.0000
+        self.__SMA26_AVE = 0.0000
+        self.__MACD9_AVE = 0.0000
+        self.__MACD = 0.0
+        self.__MACD9_AVE_pre = 0.0000
+        self.__MACD_pre = 0.0
+        self.__SMA12 = []
+        self.__SMA26 = []
+        self.__EMA12 = []
+        self.__EMA26 = []
+        self.__MACD9 = []
         for var in range(0, self.__LOOP_CNT12):
             self.__SMA12.append(self.__SMA12_AVE)
 
@@ -37,12 +48,6 @@ class MovingAverageConvergenceDivergence:
 
         for var in range(0, self.__LOOP_CNT9):
             self.__MACD9.append(self.__SMA12_AVE)
-        self.__SMA12_AVE = 0.0000
-        self.__SMA26_AVE = 0.0000
-        self.__MACD9_AVE = 0.0000
-        self.__MACD = 0.0
-        self.__MACD9_AVE_pre = 0.0000
-        self.__MACD_pre = 0.0
 
     def add(self, price):
         """
